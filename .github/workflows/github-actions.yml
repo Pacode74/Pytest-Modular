@@ -24,9 +24,5 @@ jobs:
           pip install pipenv --upgrade
           pipenv install --system
       - name: Test with pytest
-        env:
-          PYTHONPATH: ${{ secrets.PYTHONPATH }}
-
         run: |
-          echo $PYTHONPATH
           pytest modular_arithmetics -s -v --durations=0 --cov=.
