@@ -2,7 +2,6 @@ image: python:3.10.8
 
 pipelines:
   default:
-    - parallel:
       - step:
           name: Modular tests
           caches:
