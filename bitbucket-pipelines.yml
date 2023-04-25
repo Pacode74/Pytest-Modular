@@ -2,12 +2,12 @@ image: python:3.10.8
 
 pipelines:
   default:
-      - step:
-          name: Modular tests
-          caches:
-            - pip
-          script:
-            - pip install pipenv --upgrade
-            - pipenv install --system
-            - pytest modular_arithmetics -s -v --durations=0 --cov=.
+    - step:
+        name: Modular tests
+        caches:
+          - pip
+        script:
+          - pip install pipenv --upgrade
+          - pipenv install --system
+          - pytest modular_arithmetics -s -v --durations=0 --cov=.
 
