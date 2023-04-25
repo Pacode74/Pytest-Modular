@@ -6,6 +6,10 @@ name = "pypi"
 [packages]
 autopep8 = "*"
 jupyter = "*"
+black = "*"
+pytest = "*"
+pytest-cov = "*"
+coverage = "*"
 
 [dev-packages]
 
