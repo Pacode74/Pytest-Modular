@@ -6,7 +6,7 @@ from modular_arithmetics.apps.modular import Mod
 
 def test_mod_simple() -> None:
     m = Mod(value=8, modulus=3)
-    assert int(m) == 0
+    assert int(m) == 2
 
     m = Mod(value=1, modulus=3)
     assert int(m) == 1
