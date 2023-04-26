@@ -10,6 +10,8 @@ black = "*"
 pytest = "*"
 pytest-cov = "*"
 coverage = "*"
+pytest-xdist = "*"
+pytest-sugar = "*"
 
 [dev-packages]
 
