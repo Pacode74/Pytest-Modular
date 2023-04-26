@@ -4,9 +4,9 @@ from typing import Callable
 from modular_arithmetics.apps.modular import Mod
 
 
-def test_mod() -> None:
+def test_mod_simple() -> None:
     m = Mod(value=8, modulus=3)
-    assert int(m) == 1
+    assert int(m) == 0
 
     m = Mod(value=1, modulus=3)
     assert int(m) == 1
@@ -53,7 +53,7 @@ def test_raise_type_exception_should_pass() -> None:
 @pytest.mark.parametrize(
     "value,modulus", [('a', 3), ([1, 2, 3], 3), (0.1, 3), (2j+1, 5)]
 )
-def test_mod(value: int, modulus: int) -> None:
+def test_raise_type_exception_should_pass_parameterize(value: int, modulus: int) -> None:
     with pytest.raises(TypeError) as e:
         Mod(value=value, modulus=modulus)
     assert "Unsupported type for value, it must be an integer, whole number." == str(e.value)
