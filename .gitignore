@@ -87,7 +87,7 @@ __pycache__/
 .idea/
 
 # Exclude following folders:
-#allure_reports/
+allure_reports/
 #images/
 jupyter_notebooks/
 /jupyter_notebooks/*/

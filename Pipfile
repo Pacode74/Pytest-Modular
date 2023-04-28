@@ -12,6 +12,7 @@ pytest-cov = "*"
 coverage = "*"
 pytest-xdist = "*"
 pytest-sugar = "*"
+allure-pytest = "*"
 
 [dev-packages]
 
