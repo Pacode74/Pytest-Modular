@@ -1,7 +1,8 @@
 # conftest.py
 import pytest
 from datetime import datetime, timedelta
-from typing import Callable
+from typing import Callable, List, Any
+from modular_arithmetics.apps.modular import Mod
 
 
 # ----------use it in test_mod_time_tracker-------------
@@ -66,3 +67,67 @@ because we implemented it ourselves.
 Important: Instead of custom decorator `track_performance_decorator` 
 that we wrote above we can use `pytest-timeout` build-in decorator.  
 """
+
+
+# -------use it in test_two_functions_take_the_same_arguments_v3 and in test_two_functions_take_different_arguments-----
+
+
+@pytest.fixture
+def modular_expected() -> Callable[[], list[int | Any]]:
+    def _modular(*args):
+        for a in args:
+            return [value % a for value in range(1, a + 1)]
+
+    return _modular
+
+
+@pytest.fixture
+def modulars_expected(request, modular_expected) -> list[list[int | Any]]:
+    lst = []
+    modulus = request.param  # this is pytest request
+    for i in modulus:
+        lst.append(modular_expected(i))
+    return lst
+
+
+@pytest.fixture
+def modular_actual() -> Callable[[], list[int | Any]]:
+    def _modular(*args):
+        for a in args:
+            return [int(Mod(value, a)) for value in range(1, a + 1)]
+
+    return _modular
+
+
+@pytest.fixture
+def modulars_actual(request, modular_actual) -> list[list[int]]:
+    lst = []
+    modulus = request.param  # this is pytest request
+    for i in modulus:
+        lst.append(modular_actual(i))
+    return lst
+
+
+@pytest.fixture
+def modulars_expected_actual(request, modular_actual, modular_expected) -> List[int]:
+    modulus = request.param
+    lst_actual = [modular_actual(i) for i in modulus]
+    lst_expected = [modular_expected(i) for i in modulus]
+    return lst_expected, lst_actual
+
+
+# ---------------it is used in test_two_functions_inside_conftest_take_the_same_arguments_v2--------------
+@pytest.fixture
+def mod_exp() -> Callable[[], list[int | Any]]:
+    def _modular(a):
+        return [value % a for value in range(1, a + 1)]
+
+    return _modular
+
+
+@pytest.fixture
+def mod_act() -> Callable[[], list[int | Any]]:
+    def _modular(a):
+        return [int(Mod(value, a)) for value in range(1, a + 1)]
+
+    return _modular
