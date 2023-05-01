@@ -2,6 +2,8 @@
 import pytest
 from datetime import datetime, timedelta
 from typing import Callable, List, Any
+
+# from apps.modular import Mod
 from modular_arithmetics.apps.modular import Mod
 
 
@@ -131,3 +133,19 @@ def mod_act() -> Callable[[], list[int | Any]]:
         return [int(Mod(value, a)) for value in range(1, a + 1)]
 
     return _modular
+
+# ------------it is used in test_raise_value_exception_should_pass_parameterize_modulus_are_the_same---------
+
+@pytest.fixture
+def instance_one(request) -> list[Mod]:
+    value_modulus = request.param
+    # print(f'value_modulus1={value_modulus}')
+    lst = [Mod(value, modulus) for value, modulus in value_modulus]
+    return lst
+
+@pytest.fixture
+def instance_two(request) -> list[Mod]:
+    value_modulus = request.param
+    # print(f'value_modulus2={value_modulus}')
+    lst = [Mod(value, modulus) for value, modulus in value_modulus]
+    return lst

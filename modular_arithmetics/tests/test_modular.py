@@ -88,16 +88,98 @@ def test_raise_type_exception_should_pass() -> None:
 @pytest.mark.parametrize(
     "value,modulus", [("a", 3), ([1, 2, 3], 3), (0.1, 3), (2j + 1, 5)]
 )
-def test_raise_type_exception_should_pass_parameterize(
+def test_raise_type_exception_should_pass_parameterize_value(
     value: int, modulus: int
 ) -> None:
-    """The same test as above except now we use different parameters."""
     with pytest.raises(TypeError) as e:
         Mod(value=value, modulus=modulus)
     assert "Unsupported type for value, it must be an integer, whole number." == str(
         e.value
     )
 
+
+@pytest.mark.parametrize(
+    "value,modulus", [(3, "a"), (3, [1, 2, 3]), (3, 0.1), (5, 2j + 1)]
+)
+def test_raise_type_exception_should_pass_parameterize_modulus(
+    value: int, modulus: int
+) -> None:
+    with pytest.raises(TypeError) as e:
+        Mod(value=value, modulus=modulus)
+    assert "Unsupported type for modulus, it must be an integer, whole number." == str(
+        e.value
+    )
+
+
+@pytest.mark.parametrize(
+    "value,modulus", [(3, -1), (3, -7), (3, -10), (5, -5)]
+)
+def test_raise_value_exception_should_pass_parameterize_modulus(
+    value: int, modulus: int
+) -> None:
+    with pytest.raises(ValueError) as e:
+        Mod(value=value, modulus=modulus)
+    assert "Modulus must be greater than zero." == str(
+        e.value
+    )
+
+
+
+@pytest.mark.parametrize("instance_one", [[(7, 13), (8, 14)]], indirect=True)
+@pytest.mark.parametrize("instance_two", [[(19, 12), (20, 12)]], indirect=True)
+def test_raise_value_exception_should_pass_parameterize_modulus_are_the_same(
+    instance_one: list[Mod], instance_two: list[Mod]
+) -> None:
+    """ The test passes if compared modulus are not the same. Normally, ValueError
+    should be rasen if modulus are different when we compare instances.
+    Explanation of the test see below Notes (2)"""
+    # print(f"{instance_one=}")
+    # print(f"{instance_two=}")
+    for i, j in zip(instance_one, instance_two):
+        with pytest.raises(ValueError) as e:
+            assert i == j
+            assert i >= j
+            assert i > j
+            t = i + j
+            t = i * j
+            t = i - j
+            t = i**j
+
+        assert "Modulus in the objects must be the same." == str(e.value)
+
+
+@pytest.mark.parametrize("instance_one", [[(7, 13), (8, 14)]], indirect=True)
+def test_raise_type_exception_should_pass_parameterize_incompatable_type(
+    instance_one: list[Mod]) -> None:
+    print(f"{instance_one=}")
+    for mod in instance_one:
+        with pytest.raises(TypeError) as e:
+            mod + [1, 2, 3]
+        assert "Incompatable types" == str(e.value)
+
+
+# ----Test Comparison operators --------------------------
+@pytest.mark.parametrize("instance_one", [[(7, 12), (8, 12)]], indirect=True)
+@pytest.mark.parametrize("instance_two",[[(19, 12), (20, 12)]],indirect=True)
+def test_equality(
+    instance_one: list[Mod], instance_two: list[Mod]
+) -> None:
+    """See below Notes (2)"""
+    # print(f"{instance_one=}")
+    # print(f"{instance_two=}")
+    for i, j in zip(instance_one, instance_two):
+        assert i == j
+
+@pytest.mark.parametrize("instance_one", [[(7, 12), (8, 12)]], indirect=True)
+@pytest.mark.parametrize("instance_two",[[(8, 12), (9, 12)]],indirect=True)
+def test_less_than(
+    instance_one: list[Mod], instance_two: list[Mod]
+) -> None:
+    """See below Notes (2)"""
+    # print(f"{instance_one=}")
+    # print(f"{instance_two=}")
+    for i, j in zip(instance_one, instance_two):
+        assert i < j
 
 # ----Test two functions allowed to take same arguments or test two functions allowed to take different arguments ------
 
