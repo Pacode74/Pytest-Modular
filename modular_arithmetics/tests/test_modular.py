@@ -2,11 +2,19 @@
 import pytest
 from typing import Callable, List, Any
 from modular_arithmetics.apps.modular import Mod
+import logging
+from modular_arithmetics.apps.exception_logging.exception_logging_warning_level import (
+    function_that_logs_something_warning_level,
+)
+from modular_arithmetics.apps.exception_logging.exception_logging_info_level import (
+    function_that_logs_something_info_level,
+)
+from modular_arithmetics.apps.exception_logging.logging_func import logger
 
-
-## in case I want to apply the same marker for all below pytest use below.
-## xyz is the name of the marker:
-# pytestmark = pytest.mark.xyz
+# --------in case I want to apply the same marker for all below pytest use below. xyz is the name of the marker:-----
+# It is a modular fixture. This means that every test function in this file after `pytestmark = pytest.mark.xyz` will
+# have this decorator.
+# pytestmark = pytest.mark.xyz or pytestmark = [pytest.mark.xyz, pytest.mark.abc]
 
 
 # ----------Basic Level Tests: test Mod with different numbers--------------------
@@ -217,3 +225,27 @@ Note:
     particular function. Then we compare if the nested lists generated
     by each function are equal.
 """
+
+# ---------------------------TestInGeneralExceptionLogging--------------------
+
+
+def test_exception_logged_warning_level(caplog) -> None:
+    """Testing exception was raised and logged at WARNING level"""
+    function_that_logs_something_warning_level()
+    assert "I am logging Modular Exception" in caplog.text
+
+
+def test_exception_logged_info_level(caplog) -> None:
+    """Testing exception was raised and logged at INFO level"""
+    with caplog.at_level(logging.INFO):
+        function_that_logs_something_info_level()
+        print(f".caplog.text:{caplog.text}")
+        assert "I am logging Modular Exception" in caplog.text
+
+
+def test_logged_info_level(caplog) -> None:
+    """Testing logging function at INFO level"""
+    with caplog.at_level(logging.INFO):
+        logger()  # imported from exception_logging
+        print(f".caplog.text:{caplog.text}")
+        assert "I am logging info level" in caplog.text
