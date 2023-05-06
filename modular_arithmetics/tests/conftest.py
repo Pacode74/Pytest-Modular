@@ -71,6 +71,13 @@ that we wrote above we can use `pytest-timeout` build-in decorator.
 """
 
 
+# ------------ use it in test_simple_1--------------------------------
+@pytest.fixture(params=[(5, 12)])
+def demo_fixture(request):
+    # print(f'{request.param=}')
+    return request.param
+
+
 # -------use it in test_two_functions_take_the_same_arguments_v3 and in test_two_functions_take_different_arguments-----
 
 
@@ -134,7 +141,9 @@ def mod_act() -> Callable[[], list[int | Any]]:
 
     return _modular
 
+
 # ------------it is used in test_raise_value_exception_should_pass_parameterize_modulus_are_the_same---------
+
 
 @pytest.fixture
 def instance_one(request) -> list[Mod]:
@@ -143,9 +152,27 @@ def instance_one(request) -> list[Mod]:
     lst = [Mod(value, modulus) for value, modulus in value_modulus]
     return lst
 
+
 @pytest.fixture
 def instance_two(request) -> list[Mod]:
     value_modulus = request.param
     # print(f'value_modulus2={value_modulus}')
     lst = [Mod(value, modulus) for value, modulus in value_modulus]
+    return lst
+
+
+# ---------------- using in test_hash -----------------------
+@pytest.fixture
+def inst_one(request) -> list[Mod]:
+    value_modulus = request.param
+    # print(f'value_modulus1={value_modulus}')
+    lst = [hash(Mod(value, modulus)) for value, modulus in value_modulus]
+    return lst
+
+
+@pytest.fixture
+def inst_two(request) -> list[Mod]:
+    value_modulus = request.param
+    # print(f'value_modulus2={value_modulus}')
+    lst = [hash(Mod(value, modulus)) for value, modulus in value_modulus]
     return lst

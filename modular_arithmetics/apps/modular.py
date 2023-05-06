@@ -52,7 +52,7 @@ class Mod:
         return self.value < other.value
 
     def __hash__(self):
-        return hash((self.value, self.modulus))  # originally I only had self.value
+        return hash((self.value, self.modulus))
 
     def __add__(self, other):
         print("__add__ called...")

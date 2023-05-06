@@ -13,6 +13,7 @@ coverage = "*"
 pytest-xdist = "*"
 pytest-sugar = "*"
 allure-pytest = "*"
+pytest-check = "*"
 
 [dev-packages]
 

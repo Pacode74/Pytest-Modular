@@ -10,6 +10,7 @@ from modular_arithmetics.apps.exception_logging.exception_logging_info_level imp
     function_that_logs_something_info_level,
 )
 from modular_arithmetics.apps.exception_logging.logging_func import logger
+from pytest_check import check # test multiple fails per test
 
 # --------in case I want to apply the same marker for all below pytest use below. xyz is the name of the marker:-----
 # It is a modular fixture. This means that every test function in this file after `pytestmark = pytest.mark.xyz` will
@@ -30,6 +31,13 @@ def test_simple() -> None:
 
     m = Mod(value=9, modulus=5)
     assert int(m) == 4
+
+
+def test_simple_1(demo_fixture) -> None:
+    """The same test as above except we use fixture from conftest.py"""
+    value, modulus = demo_fixture
+    m = Mod(value=value, modulus=modulus)
+    assert int(m) == 5
 
 
 """Easy Level Test - test the program runs correctly
@@ -111,18 +119,13 @@ def test_raise_type_exception_should_pass_parameterize_modulus(
     )
 
 
-@pytest.mark.parametrize(
-    "value,modulus", [(3, -1), (3, -7), (3, -10), (5, -5)]
-)
+@pytest.mark.parametrize("value,modulus", [(3, -1), (3, -7), (3, -10), (5, -5)])
 def test_raise_value_exception_should_pass_parameterize_modulus(
     value: int, modulus: int
 ) -> None:
     with pytest.raises(ValueError) as e:
         Mod(value=value, modulus=modulus)
-    assert "Modulus must be greater than zero." == str(
-        e.value
-    )
-
+    assert "Modulus must be greater than zero." == str(e.value)
 
 
 @pytest.mark.parametrize("instance_one", [[(7, 13), (8, 14)]], indirect=True)
@@ -130,7 +133,7 @@ def test_raise_value_exception_should_pass_parameterize_modulus(
 def test_raise_value_exception_should_pass_parameterize_modulus_are_the_same(
     instance_one: list[Mod], instance_two: list[Mod]
 ) -> None:
-    """ The test passes if compared modulus are not the same. Normally, ValueError
+    """The test passes if compared modulus are not the same. Normally, ValueError
     should be rasen if modulus are different when we compare instances.
     Explanation of the test see below Notes (2)"""
     # print(f"{instance_one=}")
@@ -150,7 +153,8 @@ def test_raise_value_exception_should_pass_parameterize_modulus_are_the_same(
 
 @pytest.mark.parametrize("instance_one", [[(7, 13), (8, 14)]], indirect=True)
 def test_raise_type_exception_should_pass_parameterize_incompatable_type(
-    instance_one: list[Mod]) -> None:
+    instance_one: list[Mod],
+) -> None:
     print(f"{instance_one=}")
     for mod in instance_one:
         with pytest.raises(TypeError) as e:
@@ -160,26 +164,24 @@ def test_raise_type_exception_should_pass_parameterize_incompatable_type(
 
 # ----Test Comparison operators --------------------------
 @pytest.mark.parametrize("instance_one", [[(7, 12), (8, 12)]], indirect=True)
-@pytest.mark.parametrize("instance_two",[[(19, 12), (20, 12)]],indirect=True)
-def test_equality(
-    instance_one: list[Mod], instance_two: list[Mod]
-) -> None:
+@pytest.mark.parametrize("instance_two", [[(19, 12), (20, 12)]], indirect=True)
+def test_equality(instance_one: list[Mod], instance_two: list[Mod]) -> None:
     """See below Notes (2)"""
     # print(f"{instance_one=}")
     # print(f"{instance_two=}")
     for i, j in zip(instance_one, instance_two):
         assert i == j
 
+
 @pytest.mark.parametrize("instance_one", [[(7, 12), (8, 12)]], indirect=True)
-@pytest.mark.parametrize("instance_two",[[(8, 12), (9, 12)]],indirect=True)
-def test_less_than(
-    instance_one: list[Mod], instance_two: list[Mod]
-) -> None:
+@pytest.mark.parametrize("instance_two", [[(8, 12), (9, 12)]], indirect=True)
+def test_less_than(instance_one: list[Mod], instance_two: list[Mod]) -> None:
     """See below Notes (2)"""
     # print(f"{instance_one=}")
     # print(f"{instance_two=}")
     for i, j in zip(instance_one, instance_two):
         assert i < j
+
 
 # ----Test two functions allowed to take same arguments or test two functions allowed to take different arguments ------
 
@@ -331,3 +333,209 @@ def test_logged_info_level(caplog) -> None:
         logger()  # imported from exception_logging
         print(f".caplog.text:{caplog.text}")
         assert "I am logging info level" in caplog.text
+
+
+# ---------- test hash-----------------------------
+@pytest.mark.parametrize("inst_one", [[(7, 12), (8, 12)]], indirect=True)
+@pytest.mark.parametrize("inst_two", [[(19, 12), (20, 12)]], indirect=True)
+def test_hash(
+    inst_one: list[Mod], inst_two: list[Mod]
+) -> None:
+    """The test passes if compared modulus are not the same. Normally, ValueError
+    should be rasen if modulus are different when we compare instances.
+    Explanation of the test see below Notes (2)"""
+    # print(f"{instance_one=}")
+    # print(f"{instance_two=}")
+    for i, j in zip(inst_one, inst_two):
+        assert i == j
+
+# --------- test addition---------------------------
+@pytest.mark.parametrize(
+    "value1, modulus1, value2, modulus2, expected",
+    [
+        (9, 5, 7, 5, "Mod(value=1, modulus=5)"),
+        (14, 5, 17, 5, "Mod(value=1, modulus=5)"),
+        (15, 7, 17, 7, "Mod(value=4, modulus=7)"),
+        (-7, 4, 12, 4, "Mod(value=1, modulus=4)")
+    ],
+)
+def test_addition(value1: int, modulus1: int, value2: int, modulus2: int, expected: str) -> None:
+    addition = Mod(value=value1, modulus=modulus1) + Mod(value=value2, modulus=modulus2)
+    with check:
+        assert repr(addition) == expected
+    addition2 = Mod((value1 + value2), modulus=modulus1)
+    with check:
+        assert repr(addition2) == expected
+
+    addition3 = Mod(value=value1, modulus=modulus1) + value2
+    with check:
+        assert repr(addition3) == expected
+
+# --------- test in-place addition---------------------------
+@pytest.mark.parametrize(
+    "value1, modulus1, value2, modulus2, expected",
+    [
+        (9, 5, 7, 5, "Mod(value=1, modulus=5)"),
+        (14, 5, 17, 5, "Mod(value=1, modulus=5)"),
+        (15, 7, 17, 7, "Mod(value=4, modulus=7)"),
+        (-7, 4, 12, 4, "Mod(value=1, modulus=4)")
+    ],
+)
+def test_in_place_addition(value1: int, modulus1: int, value2: int, modulus2: int, expected: str) -> None:
+    m1 = Mod(value=value1, modulus=modulus1)
+    m2 = Mod(value=value2, modulus=modulus2)
+    m1 += m2
+    with check:
+        assert repr(m1) == expected
+    mm1 = Mod(value=value1, modulus=modulus1)
+    mm1 += value2
+    with check:
+        assert repr(mm1) == expected
+
+# --------- test substruction---------------------------
+@pytest.mark.parametrize(
+    "value1, modulus1, value2, modulus2, expected",
+    [
+        (6, 13, 4, 13, "Mod(value=2, modulus=13)"),
+        (9, 5, 7, 5, "Mod(value=2, modulus=5)"),
+        (15, 7, 17, 7, "Mod(value=5, modulus=7)"),
+        (-3, 8, -6, 8, "Mod(value=3, modulus=8)")
+    ],
+)
+def test_subtraction(value1: int, modulus1: int, value2: int, modulus2: int, expected: str) -> None:
+    subtraction = Mod(value=value1, modulus=modulus1) - Mod(value=value2, modulus=modulus2)
+    with check:
+        assert repr(subtraction) == expected
+    subtraction2 = Mod((value1 - value2), modulus=modulus1)
+    with check:
+        assert repr(subtraction2) == expected
+    subtraction3 = Mod(value=value1, modulus=modulus1) - value2
+    with check:
+        assert repr(subtraction3) == expected
+
+
+# --------- test in-place substruction---------------------------
+@pytest.mark.parametrize(
+    "value1, modulus1, value2, modulus2, expected",
+    [
+        (6, 13, 4, 13, "Mod(value=2, modulus=13)"),
+        (9, 5, 7, 5, "Mod(value=2, modulus=5)"),
+        (15, 7, 17, 7, "Mod(value=5, modulus=7)"),
+        (-3, 8, -6, 8, "Mod(value=3, modulus=8)")
+    ],
+)
+def test_in_place_subtraction(value1: int, modulus1: int, value2: int, modulus2: int, expected: str) -> None:
+    m1 = Mod(value=value1, modulus=modulus1)
+    m2 = Mod(value=value2, modulus=modulus2)
+    m1 -= m2
+    with check:
+        assert repr(m1) == expected
+    mm1 = Mod(value=value1, modulus=modulus1)
+    mm1 -= value2
+    with check:
+        assert repr(mm1) == expected
+
+# --------- test multiplication---------------------------
+@pytest.mark.parametrize(
+    "value1, modulus1, value2, modulus2, expected",
+    [
+        (9, 5, 7, 5, "Mod(value=3, modulus=5)"),
+        (14, 5, 17, 5, "Mod(value=3, modulus=5)"),
+        (15, 7, 17, 7, "Mod(value=3, modulus=7)"),
+        (-7, 4, 12, 4, "Mod(value=0, modulus=4)")
+    ],
+)
+def test_multiplication(value1: int, modulus1: int, value2: int, modulus2: int, expected: str) -> None:
+    addition = Mod(value=value1, modulus=modulus1) * Mod(value=value2, modulus=modulus2)
+    with check:
+        assert repr(addition) == expected
+    addition2 = Mod((value1 * value2), modulus=modulus1)
+    with check:
+        assert repr(addition2) == expected
+
+    addition3 = Mod(value=value1, modulus=modulus1) * value2
+    with check:
+        assert repr(addition3) == expected
+
+# --------- test in-place multiplication---------------------------
+@pytest.mark.parametrize(
+    "value1, modulus1, value2, modulus2, expected",
+    [
+        (9, 5, 7, 5, "Mod(value=3, modulus=5)"),
+        (14, 5, 17, 5, "Mod(value=3, modulus=5)"),
+        (15, 7, 17, 7, "Mod(value=3, modulus=7)"),
+        (-7, 4, 12, 4, "Mod(value=0, modulus=4)")
+    ],
+)
+def test_in_place_multiplication(value1: int, modulus1: int, value2: int, modulus2: int, expected: str) -> None:
+    m1 = Mod(value=value1, modulus=modulus1)
+    m2 = Mod(value=value2, modulus=modulus2)
+    m1 *= m2
+    with check:
+        assert repr(m1) == expected
+    mm1 = Mod(value=value1, modulus=modulus1)
+    mm1 *= value2
+    with check:
+        assert repr(mm1) == expected
+
+
+# --------- test power---------------------------
+@pytest.mark.parametrize(
+    "value1, modulus1, value2, modulus2, expected",
+    [
+        (9, 5, 7, 5, "Mod(value=4, modulus=5)"),
+        (14, 5, 17, 5, "Mod(value=4, modulus=5)"),
+        (15, 7, 17, 7, "Mod(value=1, modulus=7)"),
+        (-7, 4, 12, 4, "Mod(value=1, modulus=4)")
+    ],
+)
+def test_power(value1: int, modulus1: int, value2: int, modulus2: int, expected: str) -> None:
+    addition = Mod(value=value1, modulus=modulus1) ** Mod(value=value2, modulus=modulus2)
+    with check:
+        assert repr(addition) == expected
+    addition2 = Mod((value1 ** value2), modulus=modulus1)
+    with check:
+        assert repr(addition2) == expected
+
+    addition3 = Mod(value=value1, modulus=modulus1) ** value2
+    with check:
+        assert repr(addition3) == expected
+
+# --------- test in-place power---------------------------
+@pytest.mark.parametrize(
+    "value1, modulus1, value2, modulus2, expected",
+    [
+        (9, 5, 7, 5, "Mod(value=4, modulus=5)"),
+        (14, 5, 17, 5, "Mod(value=4, modulus=5)"),
+        (15, 7, 17, 7, "Mod(value=1, modulus=7)"),
+        (-7, 4, 12, 4, "Mod(value=1, modulus=4)")
+    ],
+)
+def test_in_place_power(value1: int, modulus1: int, value2: int, modulus2: int, expected: str) -> None:
+    m1 = Mod(value=value1, modulus=modulus1)
+    m2 = Mod(value=value2, modulus=modulus2)
+    m1 **= m2
+    with check:
+        assert repr(m1) == expected
+    mm1 = Mod(value=value1, modulus=modulus1)
+    mm1 **= value2
+    with check:
+        assert repr(mm1) == expected
+
+
+# --------- test negative value---------------------------
+@pytest.mark.parametrize(
+    "value, modulus, expected",
+    [
+        (-9, 5, Mod(-9, 5)),
+        (-14, 5, Mod(-14, 5)),
+        (-15, 7, Mod(-15, 7)),
+        (-7, 4, Mod(-7, 4))
+    ],
+)
+def test_negative_value_argument(value: int, modulus: int, expected: Mod) -> None:
+    m = Mod(value=value, modulus=modulus)
+    assert m.__neg__() == expected.__neg__()
+
+
+
