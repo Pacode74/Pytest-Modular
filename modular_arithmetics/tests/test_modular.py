@@ -1,5 +1,7 @@
 # test_modular.py
+import types
 import pytest
+import inspect
 from typing import Callable, List, Any
 from modular_arithmetics.apps.modular import Mod
 import logging
@@ -10,14 +12,14 @@ from modular_arithmetics.apps.exception_logging.exception_logging_info_level imp
     function_that_logs_something_info_level,
 )
 from modular_arithmetics.apps.exception_logging.logging_func import logger
-from pytest_check import check # test multiple fails per test
+from pytest_check import check  # test multiple fails per test
 
 # --------in case I want to apply the same marker for all below pytest use below. xyz is the name of the marker:-----
 # It is a modular fixture. This means that every test function in this file after `pytestmark = pytest.mark.xyz` will
 # have this decorator.
 # pytestmark = pytest.mark.xyz or pytestmark = [pytest.mark.xyz, pytest.mark.abc]
 
-
+# to test specific test write: $ pytest -k name_of_the_test
 # ----------Basic Level Tests: test Mod with different numbers--------------------
 def test_simple() -> None:
     m = Mod(value=8, modulus=3)
@@ -47,6 +49,68 @@ given the correct input information."""
 @pytest.mark.parametrize(
     "value,modulus, expected",
     [
+        (5, 12, "Mod(value=5, modulus=12)"),
+        (17, 12, "Mod(value=5, modulus=12)"),
+        (-7, 12, "Mod(value=5, modulus=12)"),
+        (29, 12, "Mod(value=5, modulus=12)"),
+        (41, 12, "Mod(value=5, modulus=12)"),
+        (8, 3, "Mod(value=2, modulus=3)"),
+        (1, 3, "Mod(value=1, modulus=3)"),
+        (9, 5, "Mod(value=4, modulus=5)"),
+    ],
+)
+def test_repr_method(value: int, modulus: int, expected: str) -> None:
+    m = Mod(value=value, modulus=modulus)
+    assert repr(m) == expected
+
+
+@pytest.mark.parametrize(
+    "val, modul, expected_modulus",
+    [
+        (5, 12, 5 % 12),
+        (17, 12, 17 % 12),
+        (-7, 12, -7 % 12),
+        (29, 12, 29 % 12),
+        (41, 12, 41 % 12),
+        (8, 3, 8 % 3),
+        (1, 3, 1 % 3),
+        (9, 5, 9 % 5),
+    ],
+)
+def test_value_and_modulus_property(
+    val: int, modul: int, expected_modulus: int
+) -> None:
+    m = Mod(value=val, modulus=modul)
+    with check:
+        assert m.value == expected_modulus
+    with check:
+        assert m.modulus == modul
+
+
+@pytest.mark.parametrize(
+    "val, modul",
+    [
+        (5, 12),
+        (17, 12),
+        (-7, 12),
+        (29, 12),
+        (41, 12),
+        (8, 3),
+        (1, 3),
+        (9, 5),
+    ],
+)
+def test_private_value_and_modulus_attributes(val: int, modul: int) -> None:
+    m = Mod(value=val, modulus=modul)
+    with check:
+        assert m._value == val
+    with check:
+        assert m._modulus == modul
+
+
+@pytest.mark.parametrize(
+    "value,modulus, expected",
+    [
         (5, 12, 5),
         (17, 12, 5),
         (-7, 12, 5),
@@ -57,9 +121,21 @@ given the correct input information."""
         (9, 5, 4),
     ],
 )
-def test_simple_numbers(value: int, modulus: int, expected: int) -> None:
+def test_int(value: int, modulus: int, expected: int) -> None:
     m = Mod(value=value, modulus=modulus)
     assert int(m) == expected
+
+
+def test_simple_with_faker(fake) -> None:
+    d = [
+        {"value": fake.random_int(-50, 100), "modulus": fake.random_int(50, 100)}
+        for _ in range(5)
+    ]
+    for dictionary in d:
+        assert (
+            int(Mod(dictionary["value"], dictionary["modulus"]))
+            == dictionary["value"] % dictionary["modulus"]
+        )
 
 
 @pytest.mark.parametrize("mod_instance", [Mod])
@@ -83,7 +159,7 @@ def test_mod_time_tracker(
 given the wrong input information."""
 
 
-def test_raise_type_exception_should_pass() -> None:
+def test_raise_type_exception_should_pass_easy() -> None:
     """test that will catch TypeError exception when it is risen
     and test that the text of the exception is correct"""
     with pytest.raises(TypeError) as e:
@@ -94,7 +170,29 @@ def test_raise_type_exception_should_pass() -> None:
 
 
 @pytest.mark.parametrize(
-    "value,modulus", [("a", 3), ([1, 2, 3], 3), (0.1, 3), (2j + 1, 5)]
+    "value,modulus",
+    [
+        (r, 3)
+        for r in [
+            [1, 2, 3],
+            "John",
+            None,
+            2j + 1,
+            0.1,
+            -0.5,
+            "",
+            int,
+            str,
+            float,
+            complex,
+            list,
+            tuple,
+            range,
+            dict,
+            set,
+            frozenset,
+        ]
+    ],
 )
 def test_raise_type_exception_should_pass_parameterize_value(
     value: int, modulus: int
@@ -107,7 +205,28 @@ def test_raise_type_exception_should_pass_parameterize_value(
 
 
 @pytest.mark.parametrize(
-    "value,modulus", [(3, "a"), (3, [1, 2, 3]), (3, 0.1), (5, 2j + 1)]
+    "value,modulus",
+    [
+        (3, r)
+        for r in [
+            [1, 2, 3],
+            "John",
+            None,
+            2j + 1,
+            0.1,
+            "",
+            int,
+            str,
+            float,
+            complex,
+            list,
+            tuple,
+            range,
+            dict,
+            set,
+            frozenset,
+        ]
+    ],
 )
 def test_raise_type_exception_should_pass_parameterize_modulus(
     value: int, modulus: int
@@ -129,26 +248,47 @@ def test_raise_value_exception_should_pass_parameterize_modulus(
 
 
 @pytest.mark.parametrize("instance_one", [[(7, 13), (8, 14)]], indirect=True)
-@pytest.mark.parametrize("instance_two", [[(19, 12), (20, 12)]], indirect=True)
+@pytest.mark.parametrize("instance_two", [[(19, 11), (20, 12)]], indirect=True)
 def test_raise_value_exception_should_pass_parameterize_modulus_are_the_same(
     instance_one: list[Mod], instance_two: list[Mod]
 ) -> None:
     """The test passes if compared modulus are not the same. Normally, ValueError
-    should be rasen if modulus are different when we compare instances.
-    Explanation of the test see below Notes (2)"""
+    should be rasen if modulus are different when we compare instances."""
     # print(f"{instance_one=}")
     # print(f"{instance_two=}")
     for i, j in zip(instance_one, instance_two):
         with pytest.raises(ValueError) as e:
             assert i == j
-            assert i >= j
-            assert i > j
-            t = i + j
-            t = i * j
-            t = i - j
-            t = i**j
+            # assert i >= j
+            # assert i > j
+            # t = i + j
+            # t = i * j
+            # t = i - j
+            # t = i**j
 
         assert "Modulus in the objects must be the same." == str(e.value)
+
+
+@pytest.mark.parametrize(
+    "value1, modulus1, value2, modulus2",
+    [
+        (7, 13, 7, 14),
+        (8, 11, 21, 12),
+        (15, 8, 17, 7),
+        (-7, 4, 12, 2),
+    ],
+)
+def test_raise_value_exception_should_pass_parameterize_modulus_are_the_same_v2(
+    value1: int, modulus1: int, value2: int, modulus2: int
+) -> None:
+    instance_one = Mod(value=value1, modulus=modulus1)
+    instance_two = Mod(value=value2, modulus=modulus2)
+    with pytest.raises(ValueError) as e:
+        with check:
+            assert instance_one == instance_two
+        with check:
+            assert instance_one >= instance_two
+    assert "Modulus in the objects must be the same." == str(e.value)
 
 
 @pytest.mark.parametrize("instance_one", [[(7, 13), (8, 14)]], indirect=True)
@@ -171,6 +311,16 @@ def test_equality(instance_one: list[Mod], instance_two: list[Mod]) -> None:
     # print(f"{instance_two=}")
     for i, j in zip(instance_one, instance_two):
         assert i == j
+
+
+@pytest.mark.parametrize("instance_one", [[(8, 12), (9, 12)]], indirect=True)
+@pytest.mark.parametrize("instance_two", [[(19, 12), (20, 12)]], indirect=True)
+def test_not_equality(instance_one: list[Mod], instance_two: list[Mod]) -> None:
+    """See below Notes (2)"""
+    # print(f"{instance_one=}")
+    # print(f"{instance_two=}")
+    for i, j in zip(instance_one, instance_two):
+        assert i != j
 
 
 @pytest.mark.parametrize("instance_one", [[(7, 12), (8, 12)]], indirect=True)
@@ -273,7 +423,7 @@ def test_two_functions_inside_conftest_take_the_same_arguments_v3(
 def test_two_functions_take_different_arguments(
     modulars_expected, modulars_actual
 ) -> None:
-    """See below Notes (2)"""
+    """See below Notes (2). Useful Test for the future testing."""
     # print(f"{modulars_expected=}")
     # print(f"{modulars_actual=}")
     # Comparing two nested lists:
@@ -338,9 +488,7 @@ def test_logged_info_level(caplog) -> None:
 # ---------- test hash-----------------------------
 @pytest.mark.parametrize("inst_one", [[(7, 12), (8, 12)]], indirect=True)
 @pytest.mark.parametrize("inst_two", [[(19, 12), (20, 12)]], indirect=True)
-def test_hash(
-    inst_one: list[Mod], inst_two: list[Mod]
-) -> None:
+def test_hash(inst_one: list[Mod], inst_two: list[Mod]) -> None:
     """The test passes if compared modulus are not the same. Normally, ValueError
     should be rasen if modulus are different when we compare instances.
     Explanation of the test see below Notes (2)"""
@@ -349,6 +497,7 @@ def test_hash(
     for i, j in zip(inst_one, inst_two):
         assert i == j
 
+
 # --------- test addition---------------------------
 @pytest.mark.parametrize(
     "value1, modulus1, value2, modulus2, expected",
@@ -356,10 +505,12 @@ def test_hash(
         (9, 5, 7, 5, "Mod(value=1, modulus=5)"),
         (14, 5, 17, 5, "Mod(value=1, modulus=5)"),
         (15, 7, 17, 7, "Mod(value=4, modulus=7)"),
-        (-7, 4, 12, 4, "Mod(value=1, modulus=4)")
+        (-7, 4, 12, 4, "Mod(value=1, modulus=4)"),
     ],
 )
-def test_addition(value1: int, modulus1: int, value2: int, modulus2: int, expected: str) -> None:
+def test_addition(
+    value1: int, modulus1: int, value2: int, modulus2: int, expected: str
+) -> None:
     addition = Mod(value=value1, modulus=modulus1) + Mod(value=value2, modulus=modulus2)
     with check:
         assert repr(addition) == expected
@@ -371,6 +522,7 @@ def test_addition(value1: int, modulus1: int, value2: int, modulus2: int, expect
     with check:
         assert repr(addition3) == expected
 
+
 # --------- test in-place addition---------------------------
 @pytest.mark.parametrize(
     "value1, modulus1, value2, modulus2, expected",
@@ -378,10 +530,12 @@ def test_addition(value1: int, modulus1: int, value2: int, modulus2: int, expect
         (9, 5, 7, 5, "Mod(value=1, modulus=5)"),
         (14, 5, 17, 5, "Mod(value=1, modulus=5)"),
         (15, 7, 17, 7, "Mod(value=4, modulus=7)"),
-        (-7, 4, 12, 4, "Mod(value=1, modulus=4)")
+        (-7, 4, 12, 4, "Mod(value=1, modulus=4)"),
     ],
 )
-def test_in_place_addition(value1: int, modulus1: int, value2: int, modulus2: int, expected: str) -> None:
+def test_in_place_addition(
+    value1: int, modulus1: int, value2: int, modulus2: int, expected: str
+) -> None:
     m1 = Mod(value=value1, modulus=modulus1)
     m2 = Mod(value=value2, modulus=modulus2)
     m1 += m2
@@ -392,18 +546,23 @@ def test_in_place_addition(value1: int, modulus1: int, value2: int, modulus2: in
     with check:
         assert repr(mm1) == expected
 
-# --------- test substruction---------------------------
+
+# --------- test subtraction---------------------------
 @pytest.mark.parametrize(
     "value1, modulus1, value2, modulus2, expected",
     [
         (6, 13, 4, 13, "Mod(value=2, modulus=13)"),
         (9, 5, 7, 5, "Mod(value=2, modulus=5)"),
         (15, 7, 17, 7, "Mod(value=5, modulus=7)"),
-        (-3, 8, -6, 8, "Mod(value=3, modulus=8)")
+        (-3, 8, -6, 8, "Mod(value=3, modulus=8)"),
     ],
 )
-def test_subtraction(value1: int, modulus1: int, value2: int, modulus2: int, expected: str) -> None:
-    subtraction = Mod(value=value1, modulus=modulus1) - Mod(value=value2, modulus=modulus2)
+def test_subtraction(
+    value1: int, modulus1: int, value2: int, modulus2: int, expected: str
+) -> None:
+    subtraction = Mod(value=value1, modulus=modulus1) - Mod(
+        value=value2, modulus=modulus2
+    )
     with check:
         assert repr(subtraction) == expected
     subtraction2 = Mod((value1 - value2), modulus=modulus1)
@@ -414,17 +573,19 @@ def test_subtraction(value1: int, modulus1: int, value2: int, modulus2: int, exp
         assert repr(subtraction3) == expected
 
 
-# --------- test in-place substruction---------------------------
+# --------- test in-place subtraction---------------------------
 @pytest.mark.parametrize(
     "value1, modulus1, value2, modulus2, expected",
     [
         (6, 13, 4, 13, "Mod(value=2, modulus=13)"),
         (9, 5, 7, 5, "Mod(value=2, modulus=5)"),
         (15, 7, 17, 7, "Mod(value=5, modulus=7)"),
-        (-3, 8, -6, 8, "Mod(value=3, modulus=8)")
+        (-3, 8, -6, 8, "Mod(value=3, modulus=8)"),
     ],
 )
-def test_in_place_subtraction(value1: int, modulus1: int, value2: int, modulus2: int, expected: str) -> None:
+def test_in_place_subtraction(
+    value1: int, modulus1: int, value2: int, modulus2: int, expected: str
+) -> None:
     m1 = Mod(value=value1, modulus=modulus1)
     m2 = Mod(value=value2, modulus=modulus2)
     m1 -= m2
@@ -435,6 +596,7 @@ def test_in_place_subtraction(value1: int, modulus1: int, value2: int, modulus2:
     with check:
         assert repr(mm1) == expected
 
+
 # --------- test multiplication---------------------------
 @pytest.mark.parametrize(
     "value1, modulus1, value2, modulus2, expected",
@@ -442,10 +604,12 @@ def test_in_place_subtraction(value1: int, modulus1: int, value2: int, modulus2:
         (9, 5, 7, 5, "Mod(value=3, modulus=5)"),
         (14, 5, 17, 5, "Mod(value=3, modulus=5)"),
         (15, 7, 17, 7, "Mod(value=3, modulus=7)"),
-        (-7, 4, 12, 4, "Mod(value=0, modulus=4)")
+        (-7, 4, 12, 4, "Mod(value=0, modulus=4)"),
     ],
 )
-def test_multiplication(value1: int, modulus1: int, value2: int, modulus2: int, expected: str) -> None:
+def test_multiplication(
+    value1: int, modulus1: int, value2: int, modulus2: int, expected: str
+) -> None:
     addition = Mod(value=value1, modulus=modulus1) * Mod(value=value2, modulus=modulus2)
     with check:
         assert repr(addition) == expected
@@ -457,6 +621,7 @@ def test_multiplication(value1: int, modulus1: int, value2: int, modulus2: int, 
     with check:
         assert repr(addition3) == expected
 
+
 # --------- test in-place multiplication---------------------------
 @pytest.mark.parametrize(
     "value1, modulus1, value2, modulus2, expected",
@@ -464,10 +629,12 @@ def test_multiplication(value1: int, modulus1: int, value2: int, modulus2: int, 
         (9, 5, 7, 5, "Mod(value=3, modulus=5)"),
         (14, 5, 17, 5, "Mod(value=3, modulus=5)"),
         (15, 7, 17, 7, "Mod(value=3, modulus=7)"),
-        (-7, 4, 12, 4, "Mod(value=0, modulus=4)")
+        (-7, 4, 12, 4, "Mod(value=0, modulus=4)"),
     ],
 )
-def test_in_place_multiplication(value1: int, modulus1: int, value2: int, modulus2: int, expected: str) -> None:
+def test_in_place_multiplication(
+    value1: int, modulus1: int, value2: int, modulus2: int, expected: str
+) -> None:
     m1 = Mod(value=value1, modulus=modulus1)
     m2 = Mod(value=value2, modulus=modulus2)
     m1 *= m2
@@ -486,20 +653,25 @@ def test_in_place_multiplication(value1: int, modulus1: int, value2: int, modulu
         (9, 5, 7, 5, "Mod(value=4, modulus=5)"),
         (14, 5, 17, 5, "Mod(value=4, modulus=5)"),
         (15, 7, 17, 7, "Mod(value=1, modulus=7)"),
-        (-7, 4, 12, 4, "Mod(value=1, modulus=4)")
+        (-7, 4, 12, 4, "Mod(value=1, modulus=4)"),
     ],
 )
-def test_power(value1: int, modulus1: int, value2: int, modulus2: int, expected: str) -> None:
-    addition = Mod(value=value1, modulus=modulus1) ** Mod(value=value2, modulus=modulus2)
+def test_power(
+    value1: int, modulus1: int, value2: int, modulus2: int, expected: str
+) -> None:
+    addition = Mod(value=value1, modulus=modulus1) ** Mod(
+        value=value2, modulus=modulus2
+    )
     with check:
         assert repr(addition) == expected
-    addition2 = Mod((value1 ** value2), modulus=modulus1)
+    addition2 = Mod((value1**value2), modulus=modulus1)
     with check:
         assert repr(addition2) == expected
 
     addition3 = Mod(value=value1, modulus=modulus1) ** value2
     with check:
         assert repr(addition3) == expected
+
 
 # --------- test in-place power---------------------------
 @pytest.mark.parametrize(
@@ -508,10 +680,12 @@ def test_power(value1: int, modulus1: int, value2: int, modulus2: int, expected:
         (9, 5, 7, 5, "Mod(value=4, modulus=5)"),
         (14, 5, 17, 5, "Mod(value=4, modulus=5)"),
         (15, 7, 17, 7, "Mod(value=1, modulus=7)"),
-        (-7, 4, 12, 4, "Mod(value=1, modulus=4)")
+        (-7, 4, 12, 4, "Mod(value=1, modulus=4)"),
     ],
 )
-def test_in_place_power(value1: int, modulus1: int, value2: int, modulus2: int, expected: str) -> None:
+def test_in_place_power(
+    value1: int, modulus1: int, value2: int, modulus2: int, expected: str
+) -> None:
     m1 = Mod(value=value1, modulus=modulus1)
     m2 = Mod(value=value2, modulus=modulus2)
     m1 **= m2
@@ -523,6 +697,33 @@ def test_in_place_power(value1: int, modulus1: int, value2: int, modulus2: int, 
         assert repr(mm1) == expected
 
 
+# --------- test addition, subtraction, multiplication---------------------------
+@pytest.mark.parametrize(
+    "v1, v2, v3, v4, modulus, expected",
+    [
+        (9, 7, 1, 20, 5, "Mod(value=1, modulus=5)"),
+        (14, 17, 41, 3, 5, "Mod(value=3, modulus=5)"),
+        (14, -17, 41, 3, 7, "Mod(value=5, modulus=7)"),
+        (-14, -17, -41, -3, 12, "Mod(value=2, modulus=12)"),
+    ],
+)
+def test_various_operations(
+    v1: int, v2: int, v3: int, v4: int, modulus: int, expected: str
+) -> None:
+    total = (Mod(value=v1, modulus=modulus) + Mod(value=v2, modulus=modulus)) * (
+        Mod(value=v3, modulus=modulus) - Mod(value=v4, modulus=modulus)
+    )
+    with check:
+        assert repr(total) == expected
+    total = Mod(((v1 + v2) * (v3 - v4)), modulus=modulus)
+    with check:
+        assert repr(total) == expected
+
+    total = (Mod(value=v1, modulus=modulus) + v2) * (v3 - v4)
+    with check:
+        assert repr(total) == expected
+
+
 # --------- test negative value---------------------------
 @pytest.mark.parametrize(
     "value, modulus, expected",
@@ -530,7 +731,7 @@ def test_in_place_power(value1: int, modulus1: int, value2: int, modulus2: int, 
         (-9, 5, Mod(-9, 5)),
         (-14, 5, Mod(-14, 5)),
         (-15, 7, Mod(-15, 7)),
-        (-7, 4, Mod(-7, 4))
+        (-7, 4, Mod(-7, 4)),
     ],
 )
 def test_negative_value_argument(value: int, modulus: int, expected: Mod) -> None:
@@ -538,4 +739,103 @@ def test_negative_value_argument(value: int, modulus: int, expected: Mod) -> Non
     assert m.__neg__() == expected.__neg__()
 
 
+# ------------- Extra tests -----------------------------
+# ----------- test that class is a type instance --------
+def test_mod_is_instance_of_type() -> None:
+    assert isinstance(Mod, type)
 
+
+# --test that Mod class has 3 attributes --
+def test_instance_has_three_attrs() -> None:
+    """Test that class has 3 attrs ['convert_integer_to_modular_and_check_modulus_the_same', 'modulus', 'value']"""
+    m = Mod(value=9, modulus=5)
+    actual = len([attr for attr in dir(m) if not attr.startswith("_")])
+    expected = 3
+    assert actual == expected, f"Mod class does not have {expected} attributes."
+
+
+def test_instance_has_three_attributes() -> None:
+    """Test that class has 3 attrs ['convert_integer_to_modular_and_check_modulus_the_same', 'modulus', 'value']"""
+    m = Mod(value=9, modulus=5)
+    attributes = [attr for attr in dir(m) if not attr.startswith("_")]
+    for attr in attributes:
+        msg = f"The Mod instance does not have a {attr} attribute."
+        assert hasattr(m, attr), msg
+
+
+def test_if_three_attributes_belong_to_class() -> None:
+    """Test that class has 3 attrs ['convert_integer_to_modular_and_check_modulus_the_same', 'modulus', 'value']"""
+    m = Mod(value=9, modulus=5)
+    attributes = [attr for attr in dir(m) if not attr.startswith("_")]
+    for attr in attributes:
+        msg = f"{attr} attribute is not in instance scope."
+        with check:
+            assert attr in Mod.__dict__, msg
+        with check:
+            assert attr in type(m).__dict__, msg
+        with check:
+            assert attr in m.__class__.__dict__, msg
+        # assert attr in m.__dict__, msg
+
+
+def test_if_two_attributes_belong_to_instance() -> None:
+    """Test that class has 3 attrs ['_modulus', '_value']"""
+    m = Mod(value=9, modulus=5)
+    with check:
+        assert "_modulus" in m.__dict__
+    with check:
+        assert "_value" in m.__dict__
+
+
+def test_instance_has__value__modulus_attributes() -> None:
+    m = Mod(value=9, modulus=5)
+    attributes = ["_value", "_modulus"]
+    for attr in attributes:
+        msg = f"The Mod instance does not have {attr} attribute."
+        assert hasattr(m, attr), msg
+
+
+def test_value_is_property() -> None:
+    with check:
+        assert isinstance(Mod.value, property)
+    # alternatively:
+    with check:
+        assert isinstance(inspect.getattr_static(Mod, "value"), property)
+
+
+def test_modulus_is_property() -> None:
+    with check:
+        assert isinstance(Mod.value, property)
+    # alternatively:
+    with check:
+        assert isinstance(inspect.getattr_static(Mod, "modulus"), property)
+
+
+def test_convert_integer_to_modular_and_check_mudulus_the_same_is_function() -> None:
+    with check:
+        assert isinstance(
+            Mod.__dict__["convert_integer_to_modular_and_check_mudulus_the_same"],
+            types.FunctionType,
+        )
+    with check:
+        assert isinstance(
+            inspect.getattr_static(
+                Mod, "convert_integer_to_modular_and_check_mudulus_the_same"
+            ),
+            types.FunctionType,
+        )
+
+
+def test_convert_integer_to_modular_and_check_mudulus_the_same_function_is_callable() -> (
+    None
+):
+    assert callable(
+        Mod.convert_integer_to_modular_and_check_mudulus_the_same
+    ), f"'convert_integer_to_modular_and_check_mudulus_the_same' is not callable."
+
+
+def test_attributes_value_and_modulus_are_not_callable() -> None:
+    with check:
+        assert not callable(Mod.value), f"'value' is callable."
+    with check:
+        assert not callable(Mod.modulus), f"'modulus' is callable."

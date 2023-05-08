@@ -6,6 +6,8 @@ from typing import Callable, List, Any
 # from apps.modular import Mod
 from modular_arithmetics.apps.modular import Mod
 
+from faker import Faker
+
 
 # ----------use it in test_mod_time_tracker-------------
 @pytest.fixture
@@ -163,7 +165,7 @@ def instance_two(request) -> list[Mod]:
 
 # ---------------- using in test_hash -----------------------
 @pytest.fixture
-def inst_one(request) -> list[Mod]:
+def inst_one(request) -> list[int]:
     value_modulus = request.param
     # print(f'value_modulus1={value_modulus}')
     lst = [hash(Mod(value, modulus)) for value, modulus in value_modulus]
@@ -171,8 +173,18 @@ def inst_one(request) -> list[Mod]:
 
 
 @pytest.fixture
-def inst_two(request) -> list[Mod]:
+def inst_two(request) -> list[int]:
     value_modulus = request.param
     # print(f'value_modulus2={value_modulus}')
     lst = [hash(Mod(value, modulus)) for value, modulus in value_modulus]
     return lst
+
+
+# ----- for faker, used in test_simple_with_faker ------
+
+
+@pytest.fixture
+def fake():
+    fake = Faker()
+    fake.seed_instance(1234)
+    return fake

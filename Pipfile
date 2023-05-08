@@ -14,6 +14,8 @@ pytest-xdist = "*"
 pytest-sugar = "*"
 allure-pytest = "*"
 pytest-check = "*"
+pytest-clarity = "*"
+faker = "*"
 
 [dev-packages]
 
