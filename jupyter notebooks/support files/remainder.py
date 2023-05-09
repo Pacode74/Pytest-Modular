@@ -169,7 +169,7 @@ def a_mod_n(a, n):
     return r  # [2, 2, 2, 2, 2]
 
 
-print(a_mod_n(9, 7))
+print(a_mod_n(9, 5))
 print(a_mod_n(5, 12))
 
 print("(6) - Least residue system modulo n")
