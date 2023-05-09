@@ -22,88 +22,82 @@ from modular_arithmetics.apps.creating_data import data
 
 
 # to test specific test write: $ pytest -k name_of_the_test
-# ----------Basic Level Tests: test Mod with different numbers--------------------
-def test_simple_v1() -> None:
-    m = Mod(value=8, modulus=3)
-    assert int(m) == 2
 
-    m = Mod(value=1, modulus=3)
-    assert int(m) == 1
+# to check coverage: $ coverage run -m pytest .
+# generate coverage report: $ coverage html
 
-    m = Mod(value=5, modulus=7)
-    assert int(m) == 5
-
-    m = Mod(value=9, modulus=5)
-    assert int(m) == 4
-
-
-def test_simple_v2(demo_fixture) -> None:
-    """The same test as above except we use fixture from conftest.py"""
-    value, modulus = demo_fixture
-    m = Mod(value=value, modulus=modulus)
-    assert int(m) == 5
-
+# ----------Easy Level Tests: test Mod with different numbers--------------------
 
 """Easy Level Test - test the program runs correctly
 given the correct input information."""
 
+#
+# @pytest.mark.parametrize(
+#     "value,modulus, expected",
+#     [
+#         (5, 12, "Mod(value=5, modulus=12)"),
+#         (17, 12, "Mod(value=5, modulus=12)"),
+#         (-7, 12, "Mod(value=5, modulus=12)"),
+#         (29, 12, "Mod(value=5, modulus=12)"),
+#         (41, 12, "Mod(value=5, modulus=12)"),
+#         (8, 3, "Mod(value=2, modulus=3)"),
+#         (1, 3, "Mod(value=1, modulus=3)"),
+#         (9, 5, "Mod(value=4, modulus=5)"),
+#     ],
+# )
+# def test_repr_method_v1(value: int, modulus: int, expected: str) -> None:
+#     m = Mod(value=value, modulus=modulus)
+#     assert repr(m) == expected
+#
+#
+# def test_repr_method_v2(demo_fixt) -> None:
+#     """The same test as above except that we use now fixture parameterized."""
+#     value, modulus, expected = demo_fixt
+#     m = Mod(value=value, modulus=modulus)
+#     assert repr(m) == expected
+#
+#
+# def test_repr_method_v3(data_conftest) -> None:
+#     """The same test as above except that we use now fixture parameterized that
+#     calls for data in congruent list form."""
+#     value, modulus, expected = data_conftest
+#     m = Mod(value=value, modulus=modulus)
+#     assert repr(m) == expected
+#
+#
+# def test_repr_method_v4(param) -> None:
+#     """The same test as above except that we use fixture param"""
+#     param, remainder, congruence_list = param(
+#         modulus=5, remainder=2, value_property=True
+#     )
+#     # print(f'{param=}')
+#     for value, modulus, expected in param:
+#         m = Mod(value=value, modulus=modulus)
+#         with check:
+#             assert repr(m) == expected
+#
+#
+# @pytest.mark.parametrize(
+#     "value,modulus, expected",
+#     data(modulus=5, remainder=2, value_property=True, start_num=-100, end_num=100),
+# )
+# def test_repr_method_final(value: int, modulus: int, expected: str) -> None:
+#     """THE BEST TEST. The same test as above except that we use data function that create a list of congruent elements"""
+#     m = Mod(value=value, modulus=modulus)
+#     assert repr(m) == expected
+#
+#
+# @pytest.mark.parametrize(
+#     "value,modulus, expected",
+#     data(modulus=5, remainder=2, value_property=True, start_num=-100, end_num=100),
+# )
+# def test_repr_method_value_private_final(
+#     value: int, modulus: int, expected: str
+# ) -> None:
+#     """THE BEST TEST. The same test as above except that we use data that create a list of congruent elements"""
+#     m = Mod(value=value, modulus=modulus)
+#     assert repr(m) == expected
 
-@pytest.mark.parametrize(
-    "value,modulus, expected",
-    [
-        (5, 12, "Mod(value=5, modulus=12)"),
-        (17, 12, "Mod(value=5, modulus=12)"),
-        (-7, 12, "Mod(value=5, modulus=12)"),
-        (29, 12, "Mod(value=5, modulus=12)"),
-        (41, 12, "Mod(value=5, modulus=12)"),
-        (8, 3, "Mod(value=2, modulus=3)"),
-        (1, 3, "Mod(value=1, modulus=3)"),
-        (9, 5, "Mod(value=4, modulus=5)"),
-    ],
-)
-def test_repr_method_v1(value: int, modulus: int, expected: str) -> None:
-    m = Mod(value=value, modulus=modulus)
-    assert repr(m) == expected
-
-
-def test_repr_method_v2(demo_fixt) -> None:
-    """The same test as above except that we use now fixture parameterized."""
-    value, modulus, expected = demo_fixt
-    m = Mod(value=value, modulus=modulus)
-    assert repr(m) == expected
-
-
-def test_repr_method_v3(data_conftest) -> None:
-    """The same test as above except that we use now fixture parameterized that
-    calls for data in congruent list form."""
-    value, modulus, expected = data_conftest
-    m = Mod(value=value, modulus=modulus)
-    assert repr(m) == expected
-
-
-def test_repr_method_v4(param) -> None:
-    """The same test as above except that we use fixture param that is """
-    param, remainder, congruence_list = param(modulus=5, remainder=2, value_property=True)
-    # print(f'{param=}')
-    for value, modulus, expected in param:
-        m = Mod(value=value, modulus=modulus)
-        with check:
-            assert repr(m) == expected
-
-
-@pytest.mark.parametrize(
-    "value,modulus, expected", data(modulus=5, remainder=2, value_property=True, start_num=-100, end_num=100))
-def test_repr_method_final(value: int, modulus: int, expected: str) -> None:
-    """THE BEST TEST. The same test as above except that we use data that create a list of congruent elements"""
-    m = Mod(value=value, modulus=modulus)
-    assert repr(m) == expected
-
-@pytest.mark.parametrize(
-    "value,modulus, expected", data(modulus=5, remainder=2, value_property=True, start_num=-100, end_num=100))
-def test_repr_method_value_private_final(value: int, modulus: int, expected: str) -> None:
-    """THE BEST TEST. The same test as above except that we use data that create a list of congruent elements"""
-    m = Mod(value=value, modulus=modulus)
-    assert repr(m) == expected
 
 @pytest.mark.parametrize(
     "val, modul, expected_modulus",
@@ -128,13 +122,19 @@ def test_value_and_modulus_are_properties(
         assert m.modulus == modul
 
 
-@pytest.mark.parametrize("val, modul, expected", data(modulus=5, remainder=2, value_property=True, start_num=-100, end_num=100))
-def test_value_and_modulus_are_properties_final(val: int, modul: int, expected: str) -> None:
+@pytest.mark.parametrize(
+    "val, modul, expected",
+    data(modulus=5, remainder=2, value_property=True, start_num=-100, end_num=100),
+)
+def test_value_and_modulus_are_properties_final(
+    val: int, modul: int, expected: str
+) -> None:
     m = Mod(value=val, modulus=modul)
     with check:
         assert m.value == val % modul
     with check:
         assert m.modulus == modul
+
 
 @pytest.mark.parametrize(
     "val, modul",
@@ -158,13 +158,38 @@ def test_private_value_and_modulus_attributes(val: int, modul: int) -> None:
 
 
 @pytest.mark.parametrize(
-    "val, modul, expected", data(modulus=5, remainder=2, value_property=False, start_num=-100, end_num=100))
-def test_private_value_and_modulus_attributes_final(val: int, modul: int, expected: str) -> None:
+    "val, modul, expected",
+    data(modulus=5, remainder=2, value_property=False, start_num=-100, end_num=100),
+)
+def test_private_value_and_modulus_attributes_final(
+    val: int, modul: int, expected: str
+) -> None:
     m = Mod(value=val, modulus=modul)
     with check:
         assert m._value == eval(expected)._value
     with check:
         assert m._modulus == modul
+
+# ---------------------------- testing int method ----------------------------------------
+def test_simple_v1() -> None:
+    m = Mod(value=8, modulus=3)
+    assert int(m) == 2
+
+    m = Mod(value=1, modulus=3)
+    assert int(m) == 1
+
+    m = Mod(value=5, modulus=7)
+    assert int(m) == 5
+
+    m = Mod(value=9, modulus=5)
+    assert int(m) == 4
+
+
+def test_simple_v2(demo_fixture) -> None:
+    """The same test as above except we use fixture from conftest.py"""
+    value, modulus = demo_fixture
+    m = Mod(value=value, modulus=modulus)
+    assert int(m) == 5
 
 @pytest.mark.parametrize(
     "value,modulus, expected",
@@ -183,19 +208,27 @@ def test_int(value: int, modulus: int, expected: int) -> None:
     m = Mod(value=value, modulus=modulus)
     assert int(m) == expected
 
+
 @pytest.mark.parametrize(
-    "value,modulus, expected", data(modulus=5, remainder=2, value_property=True, start_num=-100, end_num=100))
+    "value,modulus, expected",
+    data(modulus=5, remainder=2, value_property=True, start_num=-100, end_num=100),
+)
 def test_int_final(value: int, modulus: int, expected: str) -> None:
     m = Mod(value=value, modulus=modulus)
     assert int(m) == eval(expected).value
 
 
 @pytest.mark.parametrize(
-    "value,modulus, expected", data(modulus=5, remainder=2, value_property=True, start_num=-100, end_num=100))
-def test_int_with_time_trucker_final(time_tracker, value: int, modulus: int, expected: str) -> None:
+    "value,modulus, expected",
+    data(modulus=5, remainder=2, value_property=True, start_num=-100, end_num=100),
+)
+def test_int_with_time_trucker_final(
+    time_tracker, value: int, modulus: int, expected: str
+) -> None:
     m = Mod(value=value, modulus=modulus)
     assert int(m) == eval(expected).value
 
+# ----------------------------- testing how faker package works in testing -----------------------------
 def test_simple_with_faker(fake) -> None:
     d = [
         {"value": fake.random_int(-50, 100), "modulus": fake.random_int(50, 100)}
@@ -206,7 +239,6 @@ def test_simple_with_faker(fake) -> None:
             int(Mod(dictionary["value"], dictionary["modulus"]))
             == dictionary["value"] % dictionary["modulus"]
         )
-
 
 
 # ------------------Test exceptions raised and text of exception correct-----------------------

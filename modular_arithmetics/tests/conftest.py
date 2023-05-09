@@ -9,6 +9,7 @@ from modular_arithmetics.apps.modular import Mod
 from faker import Faker
 from modular_arithmetics.apps.creating_data import data
 
+
 # ----------use it in test_mod_time_tracker-------------
 @pytest.fixture
 def time_tracker():
@@ -238,29 +239,58 @@ def remainder_list(congruent_list) -> Callable[[Any, Any, int, int], list[int]]:
 
     return _remainder_list
 
+
 @pytest.fixture
 def params_values_are_property() -> None:
-    def _params_values_are_property(modulus: int, remainder: int, start_num: int = 1, end_num: int = 100):
-        congruent_list = [num for num in range(start_num, end_num + 1) if num % modulus == remainder]
+    def _params_values_are_property(
+        modulus: int, remainder: int, start_num: int = 1, end_num: int = 100
+    ):
+        congruent_list = [
+            num for num in range(start_num, end_num + 1) if num % modulus == remainder
+        ]
         remainder_list = [(value % modulus) for value in congruent_list]
-        mod_list_value_property = [f'{Mod(value, modulus)}' for value in congruent_list]
-        params = [(value, modulus, mod) for value, mod in zip(congruent_list, mod_list_value_property)]
+        mod_list_value_property = [f"{Mod(value, modulus)}" for value in congruent_list]
+        params = [
+            (value, modulus, mod)
+            for value, mod in zip(congruent_list, mod_list_value_property)
+        ]
         return params, remainder_list, congruent_list
+
     yield _params_values_are_property
+
 
 @pytest.fixture
 def parameters() -> None:
-    def _parameters(modulus: int, remainder: int, value_property=True, start_num: int = 1, end_num: int = 100):
-        congruent_list = [num for num in range(start_num, end_num + 1) if num % modulus == remainder]
+    def _parameters(
+        modulus: int,
+        remainder: int,
+        value_property=True,
+        start_num: int = 1,
+        end_num: int = 100,
+    ):
+        congruent_list = [
+            num for num in range(start_num, end_num + 1) if num % modulus == remainder
+        ]
         remainder_list = [(value % modulus) for value in congruent_list]
         if value_property:
-            mod_list_value_property = [f'{Mod(value, modulus)}' for value in congruent_list]
-            params = [(value, modulus, mod) for value, mod in zip(congruent_list, mod_list_value_property)]
-            return params, #remainder_list, congruent_list
+            mod_list_value_property = [
+                f"{Mod(value, modulus)}" for value in congruent_list
+            ]
+            params = [
+                (value, modulus, mod)
+                for value, mod in zip(congruent_list, mod_list_value_property)
+            ]
+            return (params,)  # remainder_list, congruent_list
         else:
-            mod_list_value_property = [f'Mod(value={value}, modulus={modulus})' for value in congruent_list]
-            params = [(value, modulus, mod) for value, mod in zip(congruent_list, mod_list_value_property)]
-            return params, #remainder_list, congruent_list
+            mod_list_value_property = [
+                f"Mod(value={value}, modulus={modulus})" for value in congruent_list
+            ]
+            params = [
+                (value, modulus, mod)
+                for value, mod in zip(congruent_list, mod_list_value_property)
+            ]
+            return (params,)  # remainder_list, congruent_list
+
     yield _parameters
 
 
@@ -271,7 +301,14 @@ def param() -> None:
     mod_list_value_property = []
     mod_list_value_private = []
     params_list = []
-    def _parameters(modulus: int, remainder: int, value_property=True, start_num: int = 1, end_num: int = 100):
+
+    def _parameters(
+        modulus: int,
+        remainder: int,
+        value_property=True,
+        start_num: int = 1,
+        end_num: int = 100,
+    ):
         # Loop through the range of numbers and check for congruence
         for num in range(start_num, end_num + 1):
             if num % modulus == remainder:
@@ -283,7 +320,9 @@ def param() -> None:
 
         if value_property:
             for value in congruent_list:
-                mod_list_value_property.append(f'Mod(value={value%modulus}, modulus={modulus})')
+                mod_list_value_property.append(
+                    f"Mod(value={value%modulus}, modulus={modulus})"
+                )
 
             for value, mod in zip(congruent_list, mod_list_value_property):
                 params_list.append((value, modulus, mod))
@@ -291,12 +330,13 @@ def param() -> None:
             return params_list, remainder_list, congruent_list
         else:
             for value in congruent_list:
-                mod_list_value_private.append(f'Mod(value={value}, modulus={modulus})')
+                mod_list_value_private.append(f"Mod(value={value}, modulus={modulus})")
 
             for value, mod in zip(congruent_list, mod_list_value_private):
                 params_list.append((value, modulus, mod))
 
             return params_list, remainder_list, congruent_list
+
     yield _parameters
     del congruent_list[:]
     del remainder_list[:]
@@ -304,8 +344,8 @@ def param() -> None:
     del mod_list_value_private[:]
     del params_list[:]
 
+
 @pytest.fixture(params=data(modulus=5, remainder=2, value_property=True))
 def data_conftest(request):
     # print(f'{request.param=}')
     return request.param
-
