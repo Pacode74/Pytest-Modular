@@ -2,10 +2,7 @@
 import pytest
 from datetime import datetime, timedelta
 from typing import Callable, List, Any
-
-# from apps.modular import Mod
 from modular_arithmetics.apps.modular import Mod
-
 from faker import Faker
 from modular_arithmetics.apps.creating_data import data
 
@@ -208,11 +205,15 @@ def fake():
     return fake
 
 
-# ----------------------------test congruence list------------
+# ----------------------------test with congruence list------------
 
 
 @pytest.fixture
 def congruent_list() -> Callable[[Any, Any, int, int], list[int]]:
+    """Fixture that creates a congruent list.
+    You use it as follows:
+    congruent_list(modulus: 5, remainder: 2, start_num: int = 1, end_num: int = 100)."""
+
     def _congruent_list(
         modulus: int, remainder: int, start_num: int = 1, end_num: int = 100
     ):
@@ -225,6 +226,10 @@ def congruent_list() -> Callable[[Any, Any, int, int], list[int]]:
 
 @pytest.fixture
 def remainder_list(congruent_list) -> Callable[[Any, Any, int, int], list[int]]:
+    """Fixture that creates a list with remainders.
+    You use it as follows:
+    remainder_list(modulus: 5, remainder: 2, start_num: int = 1, end_num: int = 100)."""
+
     def _remainder_list(
         modulus: int,
         remainder: int,
@@ -242,6 +247,11 @@ def remainder_list(congruent_list) -> Callable[[Any, Any, int, int], list[int]]:
 
 @pytest.fixture
 def params_values_are_property() -> None:
+    """Fixture that creates a list with [value, modulus, Mod(value=value, modulus=modulus)].
+    You use it as follows:
+    params_values_are_property(modulus: 5, remainder: 2, start_num: int = 1, end_num: int = 100).
+    The value used in Mod is property type."""
+
     def _params_values_are_property(
         modulus: int, remainder: int, start_num: int = 1, end_num: int = 100
     ):
@@ -261,6 +271,13 @@ def params_values_are_property() -> None:
 
 @pytest.fixture
 def parameters() -> None:
+    """Fixture that creates a list with [value, modulus, Mod(value=value, modulus=modulus)].
+    You use it as follows:
+    parameters(modulus: 5, remainder: 2, value_property=True,
+    start_num: int = 1, end_num: int = 100).
+    It has option to select value_property or value as private attribute by selecting
+    True or False."""
+
     def _parameters(
         modulus: int,
         remainder: int,
@@ -296,6 +313,11 @@ def parameters() -> None:
 
 @pytest.fixture
 def param() -> None:
+    """The same fixture as above except that here we implement
+    setup and teardown of lists.
+    You use it as follows:
+    param(modulus: 5, remainder: 2, value_property=True,
+    start_num: int = 1, end_num: int = 100)"""
     congruent_list = []
     remainder_list = []
     mod_list_value_property = []
@@ -347,5 +369,6 @@ def param() -> None:
 
 @pytest.fixture(params=data(modulus=5, remainder=2, value_property=True))
 def data_conftest(request):
+    """data is a function that create list with values, modulus, Mod."""
     # print(f'{request.param=}')
     return request.param

@@ -4,6 +4,9 @@ import pytest
 import inspect
 from typing import Callable, List, Any
 from modular_arithmetics.apps.modular import Mod
+from pytest_check import check  # test multiple fails per test
+from modular_arithmetics.apps.creating_data import data
+
 import logging
 from modular_arithmetics.apps.exception_logging.exception_logging_warning_level import (
     function_that_logs_something_warning_level,
@@ -12,8 +15,6 @@ from modular_arithmetics.apps.exception_logging.exception_logging_info_level imp
     function_that_logs_something_info_level,
 )
 from modular_arithmetics.apps.exception_logging.logging_func import logger
-from pytest_check import check  # test multiple fails per test
-from modular_arithmetics.apps.creating_data import data
 
 # --------in case I want to apply the same marker for all below pytest use below. xyz is the name of the marker:-----
 # It is a modular fixture. This means that every test function in this file after `pytestmark = pytest.mark.xyz` will
@@ -31,72 +32,75 @@ from modular_arithmetics.apps.creating_data import data
 """Easy Level Test - test the program runs correctly
 given the correct input information."""
 
-#
-# @pytest.mark.parametrize(
-#     "value,modulus, expected",
-#     [
-#         (5, 12, "Mod(value=5, modulus=12)"),
-#         (17, 12, "Mod(value=5, modulus=12)"),
-#         (-7, 12, "Mod(value=5, modulus=12)"),
-#         (29, 12, "Mod(value=5, modulus=12)"),
-#         (41, 12, "Mod(value=5, modulus=12)"),
-#         (8, 3, "Mod(value=2, modulus=3)"),
-#         (1, 3, "Mod(value=1, modulus=3)"),
-#         (9, 5, "Mod(value=4, modulus=5)"),
-#     ],
-# )
-# def test_repr_method_v1(value: int, modulus: int, expected: str) -> None:
-#     m = Mod(value=value, modulus=modulus)
-#     assert repr(m) == expected
-#
-#
-# def test_repr_method_v2(demo_fixt) -> None:
-#     """The same test as above except that we use now fixture parameterized."""
-#     value, modulus, expected = demo_fixt
-#     m = Mod(value=value, modulus=modulus)
-#     assert repr(m) == expected
-#
-#
-# def test_repr_method_v3(data_conftest) -> None:
-#     """The same test as above except that we use now fixture parameterized that
-#     calls for data in congruent list form."""
-#     value, modulus, expected = data_conftest
-#     m = Mod(value=value, modulus=modulus)
-#     assert repr(m) == expected
-#
-#
-# def test_repr_method_v4(param) -> None:
-#     """The same test as above except that we use fixture param"""
-#     param, remainder, congruence_list = param(
-#         modulus=5, remainder=2, value_property=True
-#     )
-#     # print(f'{param=}')
-#     for value, modulus, expected in param:
-#         m = Mod(value=value, modulus=modulus)
-#         with check:
-#             assert repr(m) == expected
-#
-#
-# @pytest.mark.parametrize(
-#     "value,modulus, expected",
-#     data(modulus=5, remainder=2, value_property=True, start_num=-100, end_num=100),
-# )
-# def test_repr_method_final(value: int, modulus: int, expected: str) -> None:
-#     """THE BEST TEST. The same test as above except that we use data function that create a list of congruent elements"""
-#     m = Mod(value=value, modulus=modulus)
-#     assert repr(m) == expected
-#
-#
-# @pytest.mark.parametrize(
-#     "value,modulus, expected",
-#     data(modulus=5, remainder=2, value_property=True, start_num=-100, end_num=100),
-# )
-# def test_repr_method_value_private_final(
-#     value: int, modulus: int, expected: str
-# ) -> None:
-#     """THE BEST TEST. The same test as above except that we use data that create a list of congruent elements"""
-#     m = Mod(value=value, modulus=modulus)
-#     assert repr(m) == expected
+
+@pytest.mark.parametrize(
+    "value,modulus, expected",
+    [
+        (5, 12, "Mod(value=5, modulus=12)"),
+        (17, 12, "Mod(value=5, modulus=12)"),
+        (-7, 12, "Mod(value=5, modulus=12)"),
+        (29, 12, "Mod(value=5, modulus=12)"),
+        (41, 12, "Mod(value=5, modulus=12)"),
+        (8, 3, "Mod(value=2, modulus=3)"),
+        (1, 3, "Mod(value=1, modulus=3)"),
+        (9, 5, "Mod(value=4, modulus=5)"),
+    ],
+)
+def test_repr_method_v1(value: int, modulus: int, expected: str) -> None:
+    m = Mod(value=value, modulus=modulus)
+    assert repr(m) == expected
+
+
+def test_repr_method_v2(demo_fixt) -> None:
+    """The same test as above except that we use now fixture parameterized."""
+    value, modulus, expected = demo_fixt
+    m = Mod(value=value, modulus=modulus)
+    assert repr(m) == expected
+
+
+def test_repr_method_v3(data_conftest) -> None:
+    """The same test as above except that we use now fixture parameterized that
+    calls for data in congruent list form."""
+    value, modulus, expected = data_conftest
+    m = Mod(value=value, modulus=modulus)
+    assert repr(m) == expected
+
+
+def test_repr_method_v4(param) -> None:
+    """The same test as above except that we use fixture param"""
+    param, remainder, congruence_list = param(
+        modulus=5, remainder=2, value_property=True
+    )
+    # print(f'{param=}')
+    for value, modulus, expected in param:
+        m = Mod(value=value, modulus=modulus)
+        with check:
+            assert repr(m) == expected
+
+
+@pytest.mark.parametrize(
+    "value,modulus, expected",
+    data(modulus=5, remainder=2, value_property=True, start_num=-100, end_num=100),
+)
+def test_repr_method_final(value: int, modulus: int, expected: str) -> None:
+    """THE BEST TEST. The same test as above except that we use data function that create a list of congruent elements"""
+    m = Mod(value=value, modulus=modulus)
+    assert repr(m) == expected
+
+
+@pytest.mark.parametrize(
+    "value,modulus, expected",
+    data(modulus=5, remainder=2, value_property=True, start_num=-100, end_num=100),
+)
+def test_repr_method_value_private_final(
+    value: int, modulus: int, expected: str
+) -> None:
+    """The same test as above except that we use data that create a list of congruent elements"""
+    m = Mod(value=value, modulus=modulus)
+    assert repr(m) == expected
+
+
+# ------------------- test value and modulus as properties ---------------------------
 
 
 @pytest.mark.parametrize(
@@ -136,6 +140,7 @@ def test_value_and_modulus_are_properties_final(
         assert m.modulus == modul
 
 
+# ------------------- test _value and _modulus as private attributes ----------------------
 @pytest.mark.parametrize(
     "val, modul",
     [
@@ -170,6 +175,7 @@ def test_private_value_and_modulus_attributes_final(
     with check:
         assert m._modulus == modul
 
+
 # ---------------------------- testing int method ----------------------------------------
 def test_simple_v1() -> None:
     m = Mod(value=8, modulus=3)
@@ -190,6 +196,7 @@ def test_simple_v2(demo_fixture) -> None:
     value, modulus = demo_fixture
     m = Mod(value=value, modulus=modulus)
     assert int(m) == 5
+
 
 @pytest.mark.parametrize(
     "value,modulus, expected",
@@ -227,6 +234,7 @@ def test_int_with_time_trucker_final(
 ) -> None:
     m = Mod(value=value, modulus=modulus)
     assert int(m) == eval(expected).value
+
 
 # ----------------------------- testing how faker package works in testing -----------------------------
 def test_simple_with_faker(fake) -> None:
@@ -510,7 +518,7 @@ def test_two_functions_inside_conftest_take_the_same_arguments_v3(
 def test_two_functions_take_different_arguments(
     modulars_expected, modulars_actual
 ) -> None:
-    """See below Notes (2). Useful Test for the future testing."""
+    """THIS IS USEFUL TEST. See below Notes (2). Useful Test for the future testing."""
     # print(f"{modulars_expected=}")
     # print(f"{modulars_actual=}")
     # Comparing two nested lists:
@@ -572,7 +580,7 @@ def test_logged_info_level(caplog) -> None:
         assert "I am logging info level" in caplog.text
 
 
-# ---------- test hash-----------------------------
+# ---------- test hash method --------------------------------------------------
 @pytest.mark.parametrize("inst_one", [[(7, 12), (8, 12)]], indirect=True)
 @pytest.mark.parametrize("inst_two", [[(19, 12), (20, 12)]], indirect=True)
 def test_hash(inst_one: list[Mod], inst_two: list[Mod]) -> None:
